@@ -1,0 +1,32 @@
+{
+  "name": "classy-pay-client",
+  "version": "1.0.0",
+  "description": "Client for Classy Pay.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/classy-org/classy-pay-client"
+  },
+  "keywords": [
+    "classy",
+    "pay",
+    "client"
+  ],
+  "author": "jingram@classy.org",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/classy-org/classy-pay-client/issues"
+  },
+  "homepage": "https://github.com/classy-org/classy-pay-client#readme",
+  "dependencies": {
+    "authorization-hmac256": "^1.0.0",
+    "request": "^2.81.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.5.0",
+    "eslint-config-google": "^0.9.1"
+  }
+}
