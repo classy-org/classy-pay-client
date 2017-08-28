@@ -6,7 +6,15 @@ let token;
 let secret;
 let timeout;
 let HmacAuthorize;
-let errorNok;
+
+function parse(body) {
+  try {
+    return JSON.parse(body);
+  } catch (e) {
+    console.error(e);
+    return {};
+  }
+}
 
 function payRequest(appId, method, resource, payload, callback) {
   let options = {
@@ -24,18 +32,13 @@ function payRequest(appId, method, resource, payload, callback) {
     options.body = JSON.stringify(payload);
   }
   request(options, function(error, response, body) {
-    let status = _.get(response, 'statusCode');
-    let result = {
-      status,
+    callback(error, {
+      status: _.get(response, 'statusCode'),
       error,
       response,
-      body
-    };
-    if (status === 200) {
-      callback(null, body ? JSON.parse(body) : {});
-    } else {
-      errorNok ? callback(result) : callback(null, result);
-    }
+      body,
+      object: parse(body)
+    });
   });
 }
 
@@ -48,7 +51,6 @@ module.exports = (config) => {
   token = config.token;
   secret = config.secret;
   timeout = config.timeout;
-  errorNok = _.get(config, 'errorNok', true),
   HmacAuthorize = require('authorization-hmac256')({
     service: 'CWS',
     token,
