@@ -1,11 +1,11 @@
 'use strict';
 const request = require('request');
+const _ = require('lodash');
 let apiUrl;
 let token;
 let secret;
 let timeout;
 let HmacAuthorize;
-let exceptionOnNok;
 
 function payRequest(appId, method, resource, payload, callback) {
   let options = {
@@ -25,11 +25,11 @@ function payRequest(appId, method, resource, payload, callback) {
   request(options, function(error, response, body) {
     if (!error && response.statusCode === 200) {
       callback(null, body ? JSON.parse(body) : {});
-    } else if (exceptionOnNok) {
-      callback(error || 'Response was not 200 OK: ' +
-        JSON.stringify(response, null, 2));
     } else {
-      callback(response.statusCode, body);
+      callback({
+        status: _.get(response, 'statusCode', undefined),
+        error: error || JSON.stringify(response, null, 2)
+      });
     }
   });
 }
@@ -43,7 +43,6 @@ module.exports = (config) => {
   token = config.token;
   secret = config.secret;
   timeout = config.timeout;
-  exceptionOnNok = config.exceptionOnNok || true;
   HmacAuthorize = require('authorization-hmac256')({
     service: 'CWS',
     token,
