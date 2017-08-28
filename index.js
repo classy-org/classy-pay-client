@@ -24,11 +24,14 @@ function payRequest(appId, method, resource, payload, callback) {
     options.body = JSON.stringify(payload);
   }
   request(options, function(error, response, body) {
+    let status = _.get(response, 'statusCode');
     let errorResponse = {
-      status: _.get(response, 'statusCode'),
-      error: error || response
+      status,
+      error,
+      response,
+      body
     };
-    if (_.get(response, 'statusCode') === 200) {
+    if (status === 200) {
       callback(null, body ? JSON.parse(body) : {});
     } else if (errorNok) {
       callback(errorResponse);
