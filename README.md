@@ -17,7 +17,7 @@ const PayClient = require('classy-pay-client')({
   secret: 'YOUR_SECRET'
 });
 
-PayClient.request(0, 'GET', '/transaction/1', null, (error, result) => {
+PayClient.get(0, '/transaction/1', (error, result) => {
   if (error) {
     console.log(error);
   } else {
