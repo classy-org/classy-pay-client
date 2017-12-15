@@ -6,10 +6,14 @@ let config;
 
 function getHeaders(method, resource, payload) {
   return {
-    'Authorization': HmacAuthorize.sign(method, resource, 'application/json',
-      payload ? JSON.stringify(payload) : null),
+    'Authorization': HmacAuthorize.sign(
+      method,
+      resource,
+      'application/json',
+      payload ? JSON.stringify(payload) : null
+    ),
     'User-Agent': 'ClassyPay Node.JS',
-    'Content-Type': 'application/json'
+    'Content-Type': payload ? 'application/json' : undefined
   };
 }
 
