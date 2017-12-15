@@ -6,9 +6,14 @@ let config;
 
 function getHeaders(method, resource, payload) {
   return {
-    'Authorization': HmacAuthorize.sign(method, resource, 'application/json',
-      payload ? JSON.stringify(payload) : null),
-    'User-Agent': 'ClassyPay Node.JS'
+    'Authorization': HmacAuthorize.sign(
+      method,
+      resource,
+      'application/json',
+      payload ? JSON.stringify(payload) : null
+    ),
+    'User-Agent': 'ClassyPay Node.JS',
+    'Content-Type': payload ? 'application/json' : undefined
   };
 }
 
@@ -26,8 +31,7 @@ function getOptions(appId, method, resource, payload, pagination) {
     method,
     url: `${config.apiUrl}${resource}`,
     qs: getQs(appId, pagination),
-    json: payload !== null,
-    body: payload,
+    body: payload ? JSON.stringify(payload) : null,
     timeout: config.timeout,
     headers: getHeaders(method, resource, payload)
   };
