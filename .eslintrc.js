@@ -18,6 +18,7 @@ module.exports = {
     "node": true
   },
   "rules": {
+    "max-len": 0, // max line length 80 chars
     "require-jsdoc": 0, // require JSDoc comments,
     "comma-dangle": 0, // enforce trailing commas,
     "arrow-parens": 0 // enforce parens arround single arg arrow fcts
