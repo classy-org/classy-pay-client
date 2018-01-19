@@ -135,7 +135,7 @@ module.exports = (callerConfig) => {
     secret: config.secret
   });
   const context = {config, hmacAuthorize};
-  return {
+  const methods = {
     request: (appId, method, resource, payload, pagination, callback) => request(context, appId, method, resource, payload, pagination, callback),
     list: (appId, resource, callback) => list(context, appId, resource, callback),
     get: (appId, resource, callback) => get(context, appId, resource, callback),
@@ -143,4 +143,5 @@ module.exports = (callerConfig) => {
     put: (appId, resource, object, callback) => put(context, appId, resource, object, callback),
     del: (appId, resource, callback) => del(context, appId, resource, callback)
   };
+  return Promise.promisifyAll(methods);
 };
