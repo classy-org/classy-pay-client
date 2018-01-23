@@ -1,12 +1,10 @@
 const req = require('requestretry');
 const _ = require('lodash');
 const Promise = require('bluebird');
-let HmacAuthorize;
-let config;
 
-function getHeaders(method, resource, payload) {
+function getHeaders(context, method, resource, payload) {
   return {
-    'Authorization': HmacAuthorize.sign(
+    'Authorization': context.hmacAuthorize.sign(
       method,
       resource,
       'application/json',
@@ -26,14 +24,14 @@ function getQs(appId, pagination) {
   };
 }
 
-function getOptions(appId, method, resource, payload, pagination) {
+function getOptions(context, appId, method, resource, payload, pagination) {
   return {
     method,
-    url: `${config.apiUrl}${resource}`,
+    url: `${context.config.apiUrl}${resource}`,
     qs: getQs(appId, pagination),
     body: payload ? JSON.stringify(payload) : null,
-    timeout: config.timeout,
-    headers: getHeaders(method, resource, payload)
+    timeout: context.config.timeout,
+    headers: getHeaders(context, method, resource, payload)
   };
 }
 
@@ -49,8 +47,8 @@ function getResult(error, response, body) {
   };
 }
 
-function request(appId, method, resource, payload, pagination, callback) {
-  let options = getOptions(appId, method, resource, payload, pagination);
+function request(context, appId, method, resource, payload, pagination, callback) {
+  let options = getOptions(context, appId, method, resource, payload, pagination);
   req(options, function(error, response, body) {
     callback(error, getResult(error, response, body));
   });
@@ -58,8 +56,8 @@ function request(appId, method, resource, payload, pagination, callback) {
 
 let prequest = Promise.promisify(request);
 
-function getMax(appId, resource) {
-  return prequest(appId, 'GET', `${resource}/count`, null, null)
+function getMax(context, appId, resource) {
+  return prequest(context, appId, 'GET', `${resource}/count`, null, null)
     .then(function(result) {
       if (_.get(result, 'status') !== 200) {
         throw new Error(`${result.status}: ${resource}/count ${result.body}`);
@@ -69,10 +67,10 @@ function getMax(appId, resource) {
     });
 }
 
-function getAll(appId, resource, max, collection) {
+function getAll(context, appId, resource, max, collection) {
   return Promise.map(_.range(0, max, 25),
     function(page) {
-      return prequest(appId, 'GET', resource, null, {
+      return prequest(context, appId, 'GET', resource, null, {
         limit: 25,
         offset: page
       }).then(function(result) {
@@ -87,17 +85,17 @@ function getAll(appId, resource, max, collection) {
     });
 }
 
-function forList(appId, resource, callback) {
+function forList(context, appId, resource, callback) {
   let collection = [];
-  getMax(appId, resource).then(function(max) {
-    return getAll(appId, resource, max, collection);
+  getMax(context, appId, resource).then(function(max) {
+    return getAll(context, appId, resource, max, collection);
   }).then(function() {
     callback(null, collection);
   }).catch(callback);
 }
 
-function forObject(appId, method, resource, body, callback) {
-  request(appId, method, resource, body, null, function(error, result) {
+function forObject(context, appId, method, resource, body, callback) {
+  request(context, appId, method, resource, body, null, function(error, result) {
     if (_.get(result, 'status') !== 200) {
       callback(error || `${result.status}: ${resource} ${result.body}`);
     } else {
@@ -106,42 +104,44 @@ function forObject(appId, method, resource, body, callback) {
   });
 }
 
-function list(appId, resource, callback) {
-  return forList(appId, resource, callback);
+function list(context, appId, resource, callback) {
+  return forList(context, appId, resource, callback);
 }
 
-function get(appId, resource, callback) {
-  return forObject(appId, 'GET', resource, null, callback);
+function get(context, appId, resource, callback) {
+  return forObject(context, appId, 'GET', resource, null, callback);
 }
 
-function post(appId, resource, object, callback) {
-  return forObject(appId, 'POST', resource, object, callback);
+function post(context, appId, resource, object, callback) {
+  return forObject(context, appId, 'POST', resource, object, callback);
 }
 
-function put(appId, resource, object, callback) {
-  return forObject(appId, 'PUT', resource, object, callback);
+function put(context, appId, resource, object, callback) {
+  return forObject(context, appId, 'PUT', resource, object, callback);
 }
 
-function del(appId, resource, callback) {
-  return forObject(appId, 'DELETE', resource, null, callback);
+function del(context, appId, resource, callback) {
+  return forObject(context, appId, 'DELETE', resource, null, callback);
 }
 
 module.exports = (callerConfig) => {
-  config = callerConfig;
+  const config = callerConfig;
   if (!config || !config.apiUrl || !config.token || !config.secret) {
     throw new Error('You must provide apiUrl, token, and secret.');
   }
-  HmacAuthorize = require('authorization-hmac256')({
+  const hmacAuthorize = require('authorization-hmac256')({
     service: 'CWS',
     token: config.token,
     secret: config.secret
   });
-  return {
-    request,
-    list,
-    get,
-    post,
-    put,
-    del
+  const context = {config, hmacAuthorize};
+  const methods = {
+    request: (appId, method, resource, payload, pagination, callback) => request(context, appId, method, resource, payload, pagination, callback),
+    list: (appId, resource, callback) => list(context, appId, resource, callback),
+    get: (appId, resource, callback) => get(context, appId, resource, callback),
+    post: (appId, resource, object, callback) => post(context, appId, resource, object, callback),
+    put: (appId, resource, object, callback) => put(context, appId, resource, object, callback),
+    del: (appId, resource, callback) => del(context, appId, resource, callback)
   };
+  return Promise.promisifyAll(methods);
 };
