@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/classy-org/classy-pay-client#readme",
   "dependencies": {
-    "authorization-hmac256": "^1.0.0",
+    "authorization-hmac256": "latest",
     "bluebird": "^3.5.1",
     "lodash": "^4.17.5",
     "requestretry": "^1.13.0"
