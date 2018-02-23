@@ -7,7 +7,7 @@ Simple client for Classy Pay.
 
 # usage
 
-PayClient.request(appId, method, resource, postBody, callback)
+PayClient.request(appId, method, resource, payload, params, callback)
 
 ```javascript
 const PayClient = require('classy-pay-client')({
@@ -24,5 +24,14 @@ PayClient.get(0, '/transaction/1', (error, result) => {
     console.log(result);
   }
 });
+
+PayClient.request(0, 'GET', '/transaction/1', null, null, (error, result) => {
+  if (error) {
+    console.log(error);
+  } else {
+    console.log(result);
+  }
+});
+
 
 ```
