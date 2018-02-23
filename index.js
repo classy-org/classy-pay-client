@@ -12,20 +12,19 @@ function getHeaders(method, resource, payload) {
   };
 }
 
-function getQs(appId, pagination) {
+function getQs(appId, params = {}) {
   return {
     appId,
     meta: true,
-    limit: pagination ? pagination.limit : undefined,
-    offset: pagination ? pagination.offset : undefined
+    ...params
   };
 }
 
-function getOptions(appId, method, resource, payload, pagination) {
+function getOptions(appId, method, resource, payload, params) {
   return {
     method,
     url: `${config.apiUrl}${resource}`,
-    qs: getQs(appId, pagination),
+    qs: getQs(appId, params),
     json: payload !== null,
     body: payload,
     timeout: config.timeout,
@@ -45,8 +44,8 @@ function getResult(error, response, body) {
   };
 }
 
-function request(appId, method, resource, payload, pagination, callback) {
-  let options = getOptions(appId, method, resource, payload, pagination);
+function request(appId, method, resource, payload, params, callback) {
+  let options = getOptions(appId, method, resource, payload, params);
   req(options, function(error, response, body) {
     callback(error, getResult(error, response, body));
   });
