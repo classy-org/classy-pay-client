@@ -15,12 +15,11 @@ function getHeaders(context, method, resource, payload) {
   };
 }
 
-function getQs(appId, params = {}) {
-  return {
+function getQs(appId, params) {
+  return _.extend({
     appId,
     meta: true,
-    ...params
-  };
+  }, params);
 }
 
 function getOptions(context, appId, method, resource, payload, params) {
