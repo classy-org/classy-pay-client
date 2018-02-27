@@ -15,20 +15,18 @@ function getHeaders(context, method, resource, payload) {
   };
 }
 
-function getQs(appId, pagination) {
-  return {
+function getQs(appId, params) {
+  return _.extend({
     appId,
     meta: true,
-    limit: pagination ? pagination.limit : undefined,
-    offset: pagination ? pagination.offset : undefined
-  };
+  }, params);
 }
 
-function getOptions(context, appId, method, resource, payload, pagination) {
+function getOptions(context, appId, method, resource, payload, params) {
   return {
     method,
     url: `${context.config.apiUrl}${resource}`,
-    qs: getQs(appId, pagination),
+    qs: getQs(appId, params),
     body: payload ? JSON.stringify(payload) : null,
     timeout: context.config.timeout,
     headers: getHeaders(context, method, resource, payload)
@@ -47,8 +45,8 @@ function getResult(error, response, body) {
   };
 }
 
-function request(context, appId, method, resource, payload, pagination, callback) {
-  let options = getOptions(context, appId, method, resource, payload, pagination);
+function request(context, appId, method, resource, payload, params, callback) {
+  let options = getOptions(context, appId, method, resource, payload, params);
   req(options, function(error, response, body) {
     callback(error, getResult(error, response, body));
   });
@@ -136,7 +134,7 @@ module.exports = (callerConfig) => {
   });
   const context = {config, hmacAuthorize};
   const methods = {
-    request: (appId, method, resource, payload, pagination, callback) => request(context, appId, method, resource, payload, pagination, callback),
+    request: (appId, method, resource, payload, params, callback) => request(context, appId, method, resource, payload, params, callback),
     list: (appId, resource, callback) => list(context, appId, resource, callback),
     get: (appId, resource, callback) => get(context, appId, resource, callback),
     post: (appId, resource, object, callback) => post(context, appId, resource, object, callback),
