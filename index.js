@@ -22,6 +22,7 @@ function getHeaders(context, method, resource, payload) {
     ),
     'User-Agent': 'ClassyPay Node.JS',
     'Content-Type': payload ? 'application/json' : undefined,
+    'x-classypay-version': context.config.version || 1
   };
 }
 
